@@ -1,0 +1,55 @@
+#include <stdio.h>
+
+#define MAX 50
+
+int main() {
+
+    int n, graph[MAX][MAX];
+    int indegree[MAX] = {0};
+    int processed[MAX] = {0};
+
+    scanf("%d", &n);
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++) {
+
+            scanf("%d", &graph[i][j]);
+
+            if (graph[i][j])
+                indegree[j]++;
+        }
+
+    printf("Balanced Topological Order:\n");
+
+    int count = 0;
+
+    while (count < n) {
+
+        int found = 0;
+
+        for (int u = 0; u < n; u++) {
+
+            if (!processed[u] &&
+                indegree[u] == 0) {
+
+                printf("%d ", u);
+
+                processed[u] = 1;
+                count++;
+                found = 1;
+
+                for (int v = 0; v < n; v++)
+                    if (graph[u][v])
+                        indegree[v]--;
+
+                /* Process one task at a time */
+                break;
+            }
+        }
+
+        if (!found)
+            break;
+    }
+
+    return 0;
+}
