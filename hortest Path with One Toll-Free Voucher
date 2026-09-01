@@ -1,0 +1,86 @@
+#include <stdio.h>
+
+#define MAX 50
+#define INF 999999
+
+int main() {
+
+    int n, graph[MAX][MAX];
+    int dist[MAX][2];
+    int visited[MAX][2] = {0};
+
+    int S, D;
+
+    printf("Enter number of nodes: ");
+    scanf("%d", &n);
+
+    printf("Enter adjacency matrix (0 for no edge):\n");
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            scanf("%d", &graph[i][j]);
+
+    printf("Enter source and destination: ");
+    scanf("%d %d", &S, &D);
+
+    for (int i = 0; i < n; i++) {
+        dist[i][0] = INF;
+        dist[i][1] = INF;
+    }
+
+    dist[S][0] = 0;
+
+    for (int count = 0; count < 2 * n; count++) {
+
+        int u = -1, state = -1;
+        int min = INF;
+
+        for (int i = 0; i < n; i++) {
+            for (int s = 0; s < 2; s++) {
+
+                if (!visited[i][s] &&
+                    dist[i][s] < min) {
+
+                    min = dist[i][s];
+                    u = i;
+                    state = s;
+                }
+            }
+        }
+
+        if (u == -1)
+            break;
+
+        visited[u][state] = 1;
+
+        for (int v = 0; v < n; v++) {
+
+            if (graph[u][v] > 0) {
+
+                /* Normal travel */
+                if (dist[u][state] + graph[u][v]
+                    < dist[v][state]) {
+
+                    dist[v][state] =
+                        dist[u][state] + graph[u][v];
+                }
+
+                /* Use voucher */
+                if (state == 0 &&
+                    dist[u][0] < dist[v][1]) {
+
+                    dist[v][1] = dist[u][0];
+                }
+            }
+        }
+    }
+
+    int answer = dist[D][0];
+
+    if (dist[D][1] < answer)
+        answer = dist[D][1];
+
+    printf("Shortest cost = %d\n", answer);
+
+    return 0;
+}
