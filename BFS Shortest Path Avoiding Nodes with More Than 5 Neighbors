@@ -1,0 +1,80 @@
+#include <stdio.h>
+
+#define MAX 100
+
+int main() {
+
+    int n;
+    int graph[MAX][MAX];
+
+    int degree[MAX] = {0};
+    int visited[MAX] = {0};
+    int distance[MAX];
+
+    int queue[MAX];
+
+    int front = 0, rear = 0;
+
+    int S, D;
+
+    scanf("%d", &n);
+
+    for (int i = 0; i < n; i++) {
+
+        distance[i] = -1;
+
+        for (int j = 0; j < n; j++) {
+
+            scanf("%d", &graph[i][j]);
+
+            if (graph[i][j])
+                degree[i]++;
+        }
+    }
+
+    scanf("%d %d", &S, &D);
+
+    /* Source and destination must also be valid */
+    if (degree[S] > 5 ||
+        degree[D] > 5) {
+
+        printf("No valid path\n");
+        return 0;
+    }
+
+    queue[rear++] = S;
+
+    visited[S] = 1;
+    distance[S] = 0;
+
+    while (front < rear) {
+
+        int u = queue[front++];
+
+        if (u == D)
+            break;
+
+        for (int v = 0; v < n; v++) {
+
+            if (graph[u][v] &&
+                !visited[v] &&
+                degree[v] <= 5) {
+
+                visited[v] = 1;
+
+                distance[v] =
+                    distance[u] + 1;
+
+                queue[rear++] = v;
+            }
+        }
+    }
+
+    if (distance[D] == -1)
+        printf("No valid path\n");
+    else
+        printf("Shortest path = %d hops\n",
+               distance[D]);
+
+    return 0;
+}
