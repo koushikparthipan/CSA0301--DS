@@ -1,0 +1,45 @@
+#include <stdio.h>
+
+int main()
+{
+    int pnr[] =
+    {
+        4056779, 4056780, 4056781,
+        4056782, 4056783, 4056784,
+        4056785, 4056786, 4056787,
+        4056788, 4056789
+    };
+
+    int n = 11;
+    int key = 4056786;
+
+    int low = 0;
+    int high = n - 1;
+    int mid;
+    int found = 0;
+
+    while (low <= high)
+    {
+        mid = (low + high) / 2;
+
+        printf("Checking %d\n", pnr[mid]);
+
+        if (pnr[mid] == key)
+        {
+            printf("PNR Found at index %d\n", mid);
+            found = 1;
+            break;
+        }
+
+        else if (pnr[mid] < key)
+            low = mid + 1;
+
+        else
+            high = mid - 1;
+    }
+
+    if (!found)
+        printf("PNR Not Found\n");
+
+    return 0;
+}
