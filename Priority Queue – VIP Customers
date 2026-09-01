@@ -1,0 +1,70 @@
+#include <stdio.h>
+
+#define MAX 10
+
+struct customer
+{
+    int id;
+    int priority;
+};
+
+struct customer queue[MAX];
+int n = 0;
+
+void insert(int id, int priority)
+{
+    int i;
+
+    i = n - 1;
+
+    while (i >= 0 && queue[i].priority < priority)
+    {
+        queue[i + 1] = queue[i];
+        i--;
+    }
+
+    queue[i + 1].id = id;
+    queue[i + 1].priority = priority;
+
+    n++;
+}
+
+void delete()
+{
+    int i;
+
+    if (n == 0)
+    {
+        printf("Queue Empty\n");
+        return;
+    }
+
+    printf("Served Customer = %d\n", queue[0].id);
+
+    for (i = 1; i < n; i++)
+        queue[i - 1] = queue[i];
+
+    n--;
+}
+
+void display()
+{
+    int i;
+
+    for (i = 0; i < n; i++)
+        printf("Customer %d Priority %d\n",
+               queue[i].id, queue[i].priority);
+}
+
+int main()
+{
+    insert(101, 1);
+    insert(102, 3);
+    insert(103, 2);
+
+    display();
+
+    delete();
+
+    return 0;
+}
