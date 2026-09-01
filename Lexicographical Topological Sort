@@ -1,0 +1,51 @@
+#include <stdio.h>
+
+#define MAX 50
+
+int main() {
+
+    int n;
+    int graph[MAX][MAX];
+    int indegree[MAX] = {0};
+
+    scanf("%d", &n);
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++) {
+
+            scanf("%d", &graph[i][j]);
+
+            if (graph[i][j])
+                indegree[j]++;
+        }
+
+    printf("Lexicographical Topological Order:\n");
+
+    for (int count = 0; count < n; count++) {
+
+        int u = -1;
+
+        /* Select smallest available node */
+        for (int i = 0; i < n; i++) {
+
+            if (indegree[i] == 0) {
+
+                u = i;
+                break;
+            }
+        }
+
+        if (u == -1)
+            break;
+
+        printf("%d ", u);
+
+        indegree[u] = -1;
+
+        for (int v = 0; v < n; v++)
+            if (graph[u][v])
+                indegree[v]--;
+    }
+
+    return 0;
+}
