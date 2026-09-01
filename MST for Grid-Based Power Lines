@@ -1,0 +1,11 @@
+CREATE_GRID_EDGES(grid)
+
+    FOR each cell (i,j)
+
+        IF right neighbor exists
+            add edge between (i,j) and (i,j+1)
+
+        IF bottom neighbor exists
+            add edge between (i,j) and (i+1,j)
+
+    Run Kruskal on created edges
