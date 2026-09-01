@@ -1,0 +1,75 @@
+#include <stdio.h>
+
+#define MAX 100
+
+int main() {
+    int n, graph[MAX][MAX];
+
+    int visitedS[MAX] = {0};
+    int visitedD[MAX] = {0};
+
+    int queueS[MAX];
+    int queueD[MAX];
+
+    int frontS = 0, rearS = 0;
+    int frontD = 0, rearD = 0;
+
+    int S, D;
+
+    printf("Enter number of nodes: ");
+    scanf("%d", &n);
+
+    printf("Enter adjacency matrix:\n");
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            scanf("%d", &graph[i][j]);
+
+    printf("Enter source and destination: ");
+    scanf("%d %d", &S, &D);
+
+    queueS[rearS++] = S;
+    queueD[rearD++] = D;
+
+    visitedS[S] = 1;
+    visitedD[D] = 1;
+
+    while (frontS < rearS && frontD < rearD) {
+
+        int u = queueS[frontS++];
+
+        for (int v = 0; v < n; v++) {
+
+            if (graph[u][v] && !visitedS[v]) {
+
+                visitedS[v] = 1;
+                queueS[rearS++] = v;
+
+                if (visitedD[v]) {
+                    printf("Search meets at node %d\n", v);
+                    return 0;
+                }
+            }
+        }
+
+        u = queueD[frontD++];
+
+        for (int v = 0; v < n; v++) {
+
+            if (graph[u][v] && !visitedD[v]) {
+
+                visitedD[v] = 1;
+                queueD[rearD++] = v;
+
+                if (visitedS[v]) {
+                    printf("Search meets at node %d\n", v);
+                    return 0;
+                }
+            }
+        }
+    }
+
+    printf("No path found\n");
+
+    return 0;
+}
