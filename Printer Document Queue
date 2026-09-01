@@ -1,0 +1,37 @@
+#include <stdio.h>
+#define MAX 10
+
+int queue[MAX];
+int front = 0;
+int rear = -1;
+
+void addDocument(int doc)
+{
+    queue[++rear] = doc;
+}
+
+void printDocument()
+{
+    if (front > rear)
+    {
+        printf("No documents\n");
+        return;
+    }
+
+    printf("Printing Document %d\n", queue[front++]);
+}
+
+int main()
+{
+    addDocument(1003);
+    addDocument(1008);
+    addDocument(1010);
+    addDocument(1005);
+    addDocument(1009);
+    addDocument(1004);
+
+    while (front <= rear)
+        printDocument();
+
+    return 0;
+}
