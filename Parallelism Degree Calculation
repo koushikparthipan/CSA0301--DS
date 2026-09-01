@@ -1,0 +1,57 @@
+#include <stdio.h>
+
+#define MAX 50
+
+int main() {
+
+    int n, graph[MAX][MAX];
+    int indegree[MAX] = {0};
+
+    int queue[MAX];
+    int front = 0, rear = 0;
+
+    scanf("%d", &n);
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++) {
+
+            scanf("%d", &graph[i][j]);
+
+            if (graph[i][j])
+                indegree[j]++;
+        }
+
+    for (int i = 0; i < n; i++)
+        if (indegree[i] == 0)
+            queue[rear++] = i;
+
+    int maxWidth = 0;
+
+    while (front < rear) {
+
+        int levelSize = rear - front;
+
+        if (levelSize > maxWidth)
+            maxWidth = levelSize;
+
+        for (int i = 0; i < levelSize; i++) {
+
+            int u = queue[front++];
+
+            for (int v = 0; v < n; v++) {
+
+                if (graph[u][v]) {
+
+                    indegree[v]--;
+
+                    if (indegree[v] == 0)
+                        queue[rear++] = v;
+                }
+            }
+        }
+    }
+
+    printf("Maximum Parallelism = %d\n", maxWidth);
+
+    return 0;
+}
