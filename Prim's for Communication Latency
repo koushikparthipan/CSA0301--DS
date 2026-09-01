@@ -1,0 +1,49 @@
+#include <stdio.h>
+
+#define MAX 20
+#define INF 999999
+
+int main() {
+    int n, graph[MAX][MAX], visited[MAX] = {0};
+    int Lmax, total = 0, edges = 0;
+
+    printf("Enter number of satellites: ");
+    scanf("%d", &n);
+
+    printf("Enter latency adjacency matrix (0 for no edge):\n");
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++) {
+            scanf("%d", &graph[i][j]);
+            if (graph[i][j] == 0 && i != j)
+                graph[i][j] = INF;
+        }
+
+    printf("Enter maximum latency Lmax: ");
+    scanf("%d", &Lmax);
+
+    visited[0] = 1;
+
+    while (edges < n - 1) {
+        int min = INF, x = -1, y = -1;
+
+        for (int i = 0; i < n; i++)
+            if (visited[i])
+                for (int j = 0; j < n; j++)
+                    if (!visited[j] && graph[i][j] < min) {
+                        min = graph[i][j];
+                        x = i;
+                        y = j;
+                    }
+
+        if (x == -1 || total + min > Lmax)
+            break;
+
+        printf("%d - %d : %d\n", x, y, min);
+        total += min;
+        visited[y] = 1;
+        edges++;
+    }
+
+    printf("Partial tree latency = %d\n", total);
+    return 0;
+}
