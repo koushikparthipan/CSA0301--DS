@@ -1,0 +1,145 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 100
+
+typedef struct {
+    int u, v, weight;
+    int mandatory;
+} Edge;
+
+int parent[MAX];
+int rankArr[MAX];
+
+void makeSet(int n) {
+    for (int i = 0; i < n; i++) {
+        parent[i] = i;
+        rankArr[i] = 0;
+    }
+}
+
+int find(int x) {
+    if (parent[x] != x)
+        parent[x] = find(parent[x]);
+
+    return parent[x];
+}
+
+void unionSet(int x, int y) {
+    int rootX = find(x);
+    int rootY = find(y);
+
+    if (rootX == rootY)
+        return;
+
+    if (rankArr[rootX] < rankArr[rootY]) {
+        parent[rootX] = rootY;
+    }
+    else if (rankArr[rootX] > rankArr[rootY]) {
+        parent[rootY] = rootX;
+    }
+    else {
+        parent[rootY] = rootX;
+        rankArr[rootX]++;
+    }
+}
+
+int compare(const void *a, const void *b) {
+    Edge *e1 = (Edge *)a;
+    Edge *e2 = (Edge *)b;
+
+    return e1->weight - e2->weight;
+}
+
+int main() {
+    int V, E, M;
+    Edge edges[MAX];
+    Edge mst[MAX];
+
+    printf("Enter number of vertices: ");
+    scanf("%d", &V);
+
+    printf("Enter number of edges: ");
+    scanf("%d", &E);
+
+    printf("Enter edges (u v weight):\n");
+
+    for (int i = 0; i < E; i++) {
+        scanf("%d %d %d",
+              &edges[i].u,
+              &edges[i].v,
+              &edges[i].weight);
+
+        edges[i].mandatory = 0;
+    }
+
+    printf("Enter number of mandatory edges: ");
+    scanf("%d", &M);
+
+    makeSet(V);
+
+    int mstCount = 0;
+
+    printf("Enter mandatory edges as edge numbers (0 to %d):\n", E - 1);
+
+    for (int i = 0; i < M; i++) {
+        int index;
+        scanf("%d", &index);
+
+        edges[index].mandatory = 1;
+
+        int u = edges[index].u;
+        int v = edges[index].v;
+
+        // Check whether mandatory edge creates a cycle
+        if (find(u) == find(v)) {
+            printf("\nError: Mandatory edges form a cycle!\n");
+            return 0;
+        }
+
+        unionSet(u, v);
+        mst[mstCount++] = edges[index];
+    }
+
+    // Sort all edges by weight
+    qsort(edges, E, sizeof(Edge), compare);
+
+    // Normal Kruskal's Algorithm
+    for (int i = 0; i < E && mstCount < V - 1; i++) {
+
+        if (edges[i].mandatory == 1)
+            continue;
+
+        int u = edges[i].u;
+        int v = edges[i].v;
+
+        if (find(u) != find(v)) {
+
+            unionSet(u, v);
+            mst[mstCount++] = edges[i];
+        }
+    }
+
+    // Check whether MST was formed
+    if (mstCount != V - 1) {
+        printf("\nError: MST cannot be formed!\n");
+        return 0;
+    }
+
+    printf("\nMinimum Spanning Tree:\n");
+
+    int totalWeight = 0;
+
+    for (int i = 0; i < mstCount; i++) {
+        printf("%d -- %d  Weight = %d\n",
+               mst[i].u,
+               mst[i].v,
+               mst[i].weight);
+
+        totalWeight += mst[i].weight;
+    }
+
+    printf("\nTotal MST Weight = %d\n", totalWeight);
+
+    return 0;
+}
