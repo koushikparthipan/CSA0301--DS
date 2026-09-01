@@ -1,0 +1,64 @@
+#include <stdio.h>
+
+#define MAX 50
+#define INF 999999
+
+int main() {
+
+    int n;
+    int graph[MAX][MAX];
+
+    int capacity[MAX] = {0};
+    int visited[MAX] = {0};
+
+    int S, D;
+
+    scanf("%d", &n);
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            scanf("%d", &graph[i][j]);
+
+    scanf("%d %d", &S, &D);
+
+    capacity[S] = INF;
+
+    for (int count = 0; count < n; count++) {
+
+        int u = -1;
+
+        for (int i = 0; i < n; i++)
+            if (!visited[i] &&
+                (u == -1 ||
+                 capacity[i] > capacity[u]))
+
+                u = i;
+
+        if (u == -1)
+            break;
+
+        visited[u] = 1;
+
+        for (int v = 0; v < n; v++) {
+
+            if (graph[u][v] > 0 &&
+                !visited[v]) {
+
+                int newCapacity;
+
+                if (capacity[u] < graph[u][v])
+                    newCapacity = capacity[u];
+                else
+                    newCapacity = graph[u][v];
+
+                if (newCapacity > capacity[v])
+                    capacity[v] = newCapacity;
+            }
+        }
+    }
+
+    printf("Maximum Bottleneck Capacity = %d\n",
+           capacity[D]);
+
+    return 0;
+}
