@@ -1,0 +1,91 @@
+#include <stdio.h>
+
+#define MAX 50
+
+int topologicalSort(int graph[MAX][MAX],
+                    int n, int order[MAX]) {
+
+    int indegree[MAX] = {0};
+    int queue[MAX];
+    int front = 0, rear = 0;
+    int count = 0;
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            if (graph[i][j])
+                indegree[j]++;
+
+    for (int i = 0; i < n; i++)
+        if (indegree[i] == 0)
+            queue[rear++] = i;
+
+    while (front < rear) {
+
+        int u = queue[front++];
+
+        order[count++] = u;
+
+        for (int v = 0; v < n; v++) {
+
+            if (graph[u][v]) {
+
+                indegree[v]--;
+
+                if (indegree[v] == 0)
+                    queue[rear++] = v;
+            }
+        }
+    }
+
+    return count;
+}
+
+int main() {
+
+    int n;
+    int graph[MAX][MAX];
+    int original[MAX], modified[MAX];
+
+    printf("Enter number of tasks: ");
+    scanf("%d", &n);
+
+    printf("Enter adjacency matrix:\n");
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            scanf("%d", &graph[i][j]);
+
+    topologicalSort(graph, n, original);
+
+    printf("Critical dependencies:\n");
+
+    for (int u = 0; u < n; u++) {
+
+        for (int v = 0; v < n; v++) {
+
+            if (graph[u][v]) {
+
+                graph[u][v] = 0;
+
+                topologicalSort(graph, n, modified);
+
+                int changed = 0;
+
+                for (int i = 0; i < n; i++) {
+
+                    if (original[i] != modified[i]) {
+                        changed = 1;
+                        break;
+                    }
+                }
+
+                if (changed)
+                    printf("%d -> %d\n", u, v);
+
+                graph[u][v] = 1;
+            }
+        }
+    }
+
+    return 0;
+}
