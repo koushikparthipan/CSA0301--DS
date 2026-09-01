@@ -1,0 +1,43 @@
+#include <stdio.h>
+#define MAX 5
+
+int stack[MAX];
+int top = -1;
+
+void push(int x)
+{
+    if (top == MAX - 1)
+        printf("Overflow\n");
+    else
+        stack[++top] = x;
+}
+
+void pop()
+{
+    if (top == -1)
+        printf("Underflow\n");
+    else
+        top--;
+}
+
+int main()
+{
+    push(45);
+    push(22);
+    push(11);
+    push(77);
+
+    pop();
+
+    push(44);
+    push(33);
+
+    pop();
+    pop();
+    pop();
+
+    printf("Top element = %d\n", stack[top]);
+    printf("Top index = %d\n", top);
+
+    return 0;
+}
