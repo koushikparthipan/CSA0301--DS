@@ -1,0 +1,73 @@
+#include <stdio.h>
+
+#define MAX 50
+
+int main() {
+
+    int n;
+    int graph[MAX][MAX];
+    int indegree[MAX] = {0};
+    int required[MAX];
+
+    int memory;
+
+    printf("Enter number of tasks: ");
+    scanf("%d", &n);
+
+    printf("Enter adjacency matrix:\n");
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++) {
+
+            scanf("%d", &graph[i][j]);
+
+            if (graph[i][j])
+                indegree[j]++;
+        }
+
+    printf("Enter memory required for each task:\n");
+
+    for (int i = 0; i < n; i++)
+        scanf("%d", &required[i]);
+
+    printf("Enter available memory: ");
+    scanf("%d", &memory);
+
+    int processed[MAX] = {0};
+    int count = 0;
+
+    while (count < n) {
+
+        int found = 0;
+
+        for (int u = 0; u < n; u++) {
+
+            if (!processed[u] &&
+                indegree[u] == 0 &&
+                required[u] <= memory) {
+
+                printf("Processing task %d\n", u);
+
+                processed[u] = 1;
+                memory -= required[u];
+
+                for (int v = 0; v < n; v++)
+                    if (graph[u][v])
+                        indegree[v]--;
+
+                count++;
+                found = 1;
+
+                break;
+            }
+        }
+
+        if (!found)
+            break;
+    }
+
+    if (count < n)
+        printf("Some tasks cannot be processed\n");
+
+    return 0;
+}
