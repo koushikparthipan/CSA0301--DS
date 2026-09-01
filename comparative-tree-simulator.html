@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comparative Tree Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #1b1e23;
+    --panel: #232730;
+    --panel-2: #262b34;
+    --line: #383e49;
+    --text: #e9e7e1;
+    --text-dim: #9aa0ab;
+    --binary: #6fa8dc;
+    --bst: #93c47d;
+    --avl: #e0a458;
+    --btree: #c77dff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Space Grotesk', sans-serif;
+    padding:32px 40px 60px;
+  }
+  h1{
+    font-size:28px;
+    font-weight:600;
+    margin:0 0 4px;
+    letter-spacing:-0.01em;
+  }
+  .subtitle{
+    color:var(--text-dim);
+    font-size:14px;
+    margin:0 0 28px;
+    max-width:640px;
+    line-height:1.5;
+  }
+  .controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    align-items:flex-end;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px 20px;
+    margin-bottom:24px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:12px; color:var(--text-dim);}
+  input[type=text], select{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--text);
+    border-radius:6px;
+    padding:9px 11px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    min-width:220px;
+  }
+  input[type=text]:focus, select:focus{outline:2px solid var(--binary); outline-offset:1px;}
+  button{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--text);
+    border-radius:6px;
+    padding:9px 16px;
+    font-family:'Space Grotesk', sans-serif;
+    font-size:13px;
+    font-weight:500;
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  button:hover{border-color:#565e6c; background:#2b303a;}
+  button.primary{background:#3a4a63; border-color:#4d6draine;}
+  button.primary{background:#385170; border-color:#4a6b8f;}
+  button.primary:hover{background:#41608a;}
+  button:focus-visible{outline:2px solid var(--binary); outline-offset:1px;}
+  .sequence{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--text-dim);
+    margin:2px 0 22px;
+  }
+  .sequence b{color:var(--text); font-weight:500;}
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+  }
+  @media (max-width: 880px){ .grid{grid-template-columns:1fr;} }
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  .panel-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:14px 18px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  .panel-head h2{
+    font-size:15px;
+    font-weight:600;
+    margin:0;
+  }
+  .panel-head .dot{
+    display:inline-block;
+    width:9px; height:9px;
+    border-radius:50%;
+    margin-right:8px;
+  }
+  .panel-head .stats{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--text-dim);
+    text-align:right;
+    line-height:1.6;
+  }
+  .canvas-wrap{
+    background:
+      linear-gradient(var(--panel-2) 1px, transparent 1px) 0 0/100% 24px,
+      linear-gradient(90deg, var(--panel-2) 1px, transparent 1px) 0 0/24px 100%,
+      var(--bg);
+    min-height:260px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:10px;
+    overflow:auto;
+  }
+  .empty-note{color:var(--text-dim); font-size:12.5px; font-family:'IBM Plex Mono', monospace;}
+  .panel-log{
+    border-top:1px solid var(--line);
+    padding:10px 18px 14px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--text-dim);
+    max-height:110px;
+    overflow-y:auto;
+  }
+  .panel-log div{padding:2px 0;}
+  .panel-log .flag{color:var(--text);}
+  .summary{
+    margin-top:22px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:4px 20px 8px;
+  }
+  .summary h2{font-size:15px; font-weight:600; margin:14px 0 12px;}
+  table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono', monospace; font-size:12.5px;}
+  th, td{ text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); }
+  th{color:var(--text-dim); font-weight:500;}
+  td.n{color:var(--text-dim);}
+  .traversal-block{margin-top:14px; padding-bottom:16px;}
+  .traversal-block div{margin:3px 0; font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--text-dim);}
+  .traversal-block span.k{color:var(--text); margin-right:6px;}
+  svg text{ font-family:'IBM Plex Mono', monospace; }
+  .node-circle{ stroke-width:1.5; }
+  .edge{ stroke:#565e6c; stroke-width:1.4; }
+  .btree-box{ stroke-width:1.4; }
+  .btree-div{ stroke-width:1; }
+  footer{margin-top:30px; color:var(--text-dim); font-size:11.5px; font-family:'IBM Plex Mono', monospace;}
+</style>
+</head>
+<body>
+
+<h1>Comparative Tree Simulator</h1>
+<p class="subtitle">Enter one sequence of keys. Each value is inserted, in order, into a Binary Tree, a Binary Search Tree, an AVL Tree, and a B-Tree — so you can see how the same input produces four different shapes.</p>
+
+<div class="controls">
+  <div class="field">
+    <label for="valInput">Add value</label>
+    <input type="text" id="valInput" placeholder="e.g. 42" inputmode="numeric">
+  </div>
+  <button class="primary" id="insertBtn">Insert</button>
+  <div class="field">
+    <label for="bulkInput">Or insert a sequence</label>
+    <input type="text" id="bulkInput" placeholder="50, 30, 70, 20, 40, 10, 5" style="min-width:320px;">
+  </div>
+  <button class="primary" id="bulkBtn">Build all</button>
+  <div class="field">
+    <label for="orderSelect">B-Tree order</label>
+    <select id="orderSelect">
+      <option value="3">3</option>
+      <option value="4" selected>4</option>
+      <option value="5">5</option>
+    </select>
+  </div>
+  <button id="undoBtn">Undo last</button>
+  <button id="resetBtn">Reset</button>
+</div>
+
+<div class="sequence">Sequence inserted: <b id="seqDisplay">—</b></div>
+
+<div class="grid">
+  <div class="panel">
+    <div class="panel-head">
+      <h2><span class="dot" style="background:var(--binary)"></span>Binary Tree</h2>
+      <div class="stats" id="stats-binary">height —  ·  nodes —</div>
+    </div>
+    <div class="canvas-wrap" id="canvas-binary"><span class="empty-note">insert values to build the tree</span></div>
+    <div class="panel-log" id="log-binary"><div class="empty-note">values fill the next open position, level by level — no ordering rule</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2><span class="dot" style="background:var(--bst)"></span>Binary Search Tree</h2>
+      <div class="stats" id="stats-bst">height —  ·  nodes —</div>
+    </div>
+    <div class="canvas-wrap" id="canvas-bst"><span class="empty-note">insert values to build the tree</span></div>
+    <div class="panel-log" id="log-bst"><div class="empty-note">smaller values go left, larger go right of each node</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2><span class="dot" style="background:var(--avl)"></span>AVL Tree</h2>
+      <div class="stats" id="stats-avl">height —  ·  nodes —  ·  rotations —</div>
+    </div>
+    <div class="canvas-wrap" id="canvas-avl"><span class="empty-note">insert values to build the tree</span></div>
+    <div class="panel-log" id="log-avl"><div class="empty-note">rebalances automatically after any insert that breaks the height rule</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2><span class="dot" style="background:var(--btree)"></span>B-Tree <span id="btreeOrderLabel" style="color:var(--text-dim); font-weight:400;">(order 4)</span></h2>
+      <div class="stats" id="stats-btree">height —  ·  nodes —  ·  splits —</div>
+    </div>
+    <div class="canvas-wrap" id="canvas-btree"><span class="empty-note">insert values to build the tree</span></div>
+    <div class="panel-log" id="log-btree"><div class="empty-note">a node splits and promotes its median key once it holds too many keys</div></div>
+  </div>
+</div>
+
+<div class="summary">
+  <h2>Side-by-side comparison</h2>
+  <table>
+    <thead>
+      <tr><th>Structure</th><th>Height</th><th>Nodes</th><th>Balancing / splitting operations</th><th>Ordering guarantee</th></tr>
+    </thead>
+    <tbody id="summaryBody">
+      <tr><td colspan="5" class="n">insert values above to populate this table</td></tr>
+    </tbody>
+  </table>
+
+  <div class="traversal-block" id="traversalBlock" style="display:none;">
+    <div><span class="k">BST inorder</span><span id="trav-inorder">—</span></div>
+    <div><span class="k">BST preorder</span><span id="trav-preorder">—</span></div>
+    <div><span class="k">BST postorder</span><span id="trav-postorder">—</span></div>
+  </div>
+</div>
+
+<footer>All four structures rebuild from the full sequence on every insert/undo, so the comparison always reflects inserting the values in the order shown above.</footer>
+
+<script>
+// ---------- State ----------
+let sequence = [];
+
+// ============================================================
+// Binary Tree (complete-tree fill, no ordering rule)
+// ============================================================
+function buildBinaryComplete(values){
+  const nodes = values.map(v => ({val:v, left:null, right:null}));
+  for(let i=0;i<nodes.length;i++){
+    const li = 2*i+1, ri = 2*i+2;
+    if(li < nodes.length) nodes[i].left = nodes[li];
+    if(ri < nodes.length) nodes[i].right = nodes[ri];
+  }
+  return nodes.length ? nodes[0] : null;
+}
+
+// ============================================================
+// Binary Search Tree
+// ============================================================
+function buildBST(values){
+  let root = null;
+  function insert(node, v){
+    if(!node) return {val:v, left:null, right:null};
+    if(v < node.val) node.left = insert(node.left, v);
+    else if(v > node.val) node.right = insert(node.right, v);
+    return node;
+  }
+  for(const v of values) root = insert(root, v);
+  return root;
+}
+
+// ============================================================
+// AVL Tree
+// ============================================================
+function buildAVL(values, log){
+  let root = null;
+  function h(n){ return n ? n.h : 0; }
+  function upd(n){ n.h = 1 + Math.max(h(n.left), h(n.right)); }
+  function bf(n){ return h(n.left) - h(n.right); }
+  function rotRight(y){
+    const x = y.left; const t2 = x.right;
+    x.right = y; y.left = t2;
+    upd(y); upd(x);
+    return x;
+  }
+  function rotLeft(x){
+    const y = x.right; const t2 = y.left;
+    y.left = x; x.right = t2;
+    upd(x); upd(y);
+    return y;
+  }
+  function insert(node, v){
+    if(!node) return {val:v, left:null, right:null, h:1};
+    if(v < node.val) node.left = insert(node.left, v);
+    else if(v > node.val) node.right = insert(node.right, v);
+    else return node;
+    upd(node);
+    const balance = bf(node);
+    if(balance > 1 && v < node.left.val){
+      log.push(`LL imbalance at ${node.val} → right rotation`);
+      return rotRight(node);
+    }
+    if(balance < -1 && v > node.right.val){
+      log.push(`RR imbalance at ${node.val} → left rotation`);
+      return rotLeft(node);
+    }
+    if(balance > 1 && v > node.left.val){
+      log.push(`LR imbalance at ${node.val} → left rotation on ${node.left.val}, then right rotation`);
+      node.left = rotLeft(node.left);
+      return rotRight(node);
+    }
+    if(balance < -1 && v < node.right.val){
+      log.push(`RL imbalance at ${node.val} → right rotation on ${node.right.val}, then left rotation`);
+      node.right = rotRight(node.right);
+      return rotLeft(node);
+    }
+    return node;
+  }
+  for(const v of values) root = insert(root, v);
+  return root;
+}
+
+// ============================================================
+// B-Tree (preemptive split on the way down)
+// ============================================================
+function buildBTree(values, order, log){
+  const maxKeys = order - 1;
+  let root = { keys:[], children:[], leaf:true };
+
+  function splitChild(parent, i){
+    const child = parent.children[i];
+    const mid = Math.floor(child.keys.length/2);
+    const midKey = child.keys[mid];
+    const right = { keys: child.keys.slice(mid+1), children: child.leaf? [] : child.children.slice(mid+1), leaf: child.leaf };
+    const left  = { keys: child.keys.slice(0, mid), children: child.leaf? [] : child.children.slice(0, mid+1), leaf: child.leaf };
+    parent.keys.splice(i, 0, midKey);
+    parent.children.splice(i, 1, left, right);
+    log.push(`node overflow → median ${midKey} promoted, node split into two`);
+  }
+
+  function insertNonFull(node, v){
+    if(node.leaf){
+      let i = node.keys.length - 1;
+      while(i >= 0 && node.keys[i] > v) i--;
+      node.keys.splice(i+1, 0, v);
+    } else {
+      let i = node.keys.length - 1;
+      while(i >= 0 && node.keys[i] > v) i--;
+      i++;
+      if(node.children[i].keys.length === maxKeys){
+        splitChild(node, i);
+        if(v > node.keys[i]) i++;
+      }
+      insertNonFull(node.children[i], v);
+    }
+  }
+
+  for(const v of values){
+    if(root.keys.length === maxKeys){
+      const newRoot = { keys:[], children:[root], leaf:false };
+      splitChild(newRoot, 0);
+      root = newRoot;
+    }
+    insertNonFull(root, v);
+  }
+  return root;
+}
+
+function bTreeHeight(node){
+  if(!node || node.leaf) return node ? 1 : 0;
+  return 1 + bTreeHeight(node.children[0]);
+}
+function bTreeNodeCount(node){
+  if(!node) return 0;
+  let c = 1;
+  for(const ch of (node.children||[])) c += bTreeNodeCount(ch);
+  return c;
+}
+
+// ============================================================
+// Binary layout + render
+// ============================================================
+function binaryHeight(n){ return n ? 1 + Math.max(binaryHeight(n.left), binaryHeight(n.right)) : 0; }
+function binaryCount(n){ return n ? 1 + binaryCount(n.left) + binaryCount(n.right) : 0; }
+
+function layoutBinary(root){
+  const positions = [];
+  let counter = 0;
+  const R = 18, GX = 46, GY = 58;
+  function walk(node, depth){
+    if(!node) return;
+    walk(node.left, depth+1);
+    const x = counter * GX;
+    counter++;
+    const y = depth * GY;
+    node._x = x; node._y = y;
+    positions.push(node);
+    walk(node.right, depth+1);
+  }
+  walk(root, 0);
+  return { positions, R, maxX: (counter-1)*GX };
+}
+
+function renderBinary(containerId, root, color){
+  const el = document.getElementById(containerId);
+  if(!root){ el.innerHTML = '<span class="empty-note">insert values to build the tree</span>'; return; }
+  const { positions, R, maxX } = layoutBinary(root);
+  const maxY = Math.max(...positions.map(p=>p._y));
+  const pad = 30;
+  const w = maxX + pad*2, h = maxY + pad*2 + R*2;
+
+  let edges = '';
+  let nodes = '';
+  positions.forEach(n=>{
+    if(n.left) edges += `<line class="edge" x1="${n._x+pad}" y1="${n._y+pad+R}" x2="${n.left._x+pad}" y2="${n.left._y+pad+R}"/>`;
+    if(n.right) edges += `<line class="edge" x1="${n._x+pad}" y1="${n._y+pad+R}" x2="${n.right._x+pad}" y2="${n.right._y+pad+R}"/>`;
+  });
+  positions.forEach(n=>{
+    nodes += `<circle class="node-circle" cx="${n._x+pad}" cy="${n._y+pad+R}" r="${R}" fill="#1b1e23" stroke="${color}"/>`;
+    nodes += `<text x="${n._x+pad}" y="${n._y+pad+R+4}" text-anchor="middle" font-size="11.5" fill="${color}">${n.val}</text>`;
+  });
+
+  el.innerHTML = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${edges}${nodes}</svg>`;
+}
+
+// ============================================================
+// B-Tree layout + render
+// ============================================================
+function computeBWidth(node, unit){
+  if(!node || node.keys.length===0) return unit;
+  if(node.leaf) return unit * node.keys.length;
+  let w = 0;
+  for(const c of node.children) w += computeBWidth(c, unit);
+  return Math.max(w, unit * node.keys.length);
+}
+
+function layoutBTree(root, unit, rowH){
+  const boxes = [];
+  const edges = [];
+  function walk(node, x0, x1, depth){
+    if(!node) return;
+    const cx = (x0+x1)/2;
+    const boxW = Math.max(node.keys.length, 1) * unit;
+    const bx0 = cx - boxW/2;
+    node._x = cx; node._y = depth*rowH; node._w = boxW;
+    boxes.push(node);
+    if(!node.leaf && node.children.length){
+      const widths = node.children.map(c => computeBWidth(c, unit));
+      const totalW = widths.reduce((a,b)=>a+b,0);
+      let cursor = x0;
+      node.children.forEach((c,i)=>{
+        const cw = widths[i] / totalW * (x1-x0);
+        walk(c, cursor, cursor+cw, depth+1);
+        edges.push({x1:cx, y1:depth*rowH, x2:c._x, y2:(depth+1)*rowH});
+        cursor += cw;
+      });
+    }
+  }
+  const totalW = computeBWidth(root, unit);
+  walk(root, 0, totalW, 0);
+  return { boxes, edges, totalW };
+}
+
+function renderBTree(containerId, root, color){
+  const el = document.getElementById(containerId);
+  if(!root || root.keys.length===0){ el.innerHTML = '<span class="empty-note">insert values to build the tree</span>'; return; }
+  const unit = 34, rowH = 62, keyW = 30, keyH = 26;
+  const { boxes, edges, totalW } = layoutBTree(root, unit, rowH);
+  const pad = 30;
+  const maxY = Math.max(...boxes.map(b=>b._y));
+  const w = totalW + pad*2, h = maxY + pad*2 + keyH;
+
+  let edgeSvg = '';
+  edges.forEach(e=>{
+    edgeSvg += `<line class="edge" x1="${e.x1+pad}" y1="${e.y1+pad+keyH}" x2="${e.x2+pad}" y2="${e.y2+pad}"/>`;
+  });
+
+  let boxSvg = '';
+  boxes.forEach(n=>{
+    const nk = n.keys.length;
+    const bw = nk*keyW;
+    const bx = n._x + pad - bw/2;
+    const by = n._y + pad;
+    boxSvg += `<rect class="btree-box" x="${bx}" y="${by}" width="${bw}" height="${keyH}" rx="4" fill="#1b1e23" stroke="${color}"/>`;
+    for(let i=1;i<nk;i++){
+      boxSvg += `<line class="btree-div" x1="${bx+i*keyW}" y1="${by}" x2="${bx+i*keyW}" y2="${by+keyH}" stroke="${color}" opacity="0.5"/>`;
+    }
+    n.keys.forEach((k,i)=>{
+      boxSvg += `<text x="${bx + i*keyW + keyW/2}" y="${by + keyH/2 + 4}" text-anchor="middle" font-size="11.5" fill="${color}">${k}</text>`;
+    });
+  });
+
+  el.innerHTML = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${edgeSvg}${boxSvg}</svg>`;
+}
+
+// ============================================================
+// Traversals (BST)
+// ============================================================
+function inorder(n, out){ if(!n) return; inorder(n.left,out); out.push(n.val); inorder(n.right,out); }
+function preorder(n, out){ if(!n) return; out.push(n.val); preorder(n.left,out); preorder(n.right,out); }
+function postorder(n, out){ if(!n) return; postorder(n.left,out); postorder(n.right,out); out.push(n.val); }
+
+// ============================================================
+// Main rebuild
+// ============================================================
+function rebuild(){
+  document.getElementById('seqDisplay').textContent = sequence.length ? sequence.join(', ') : '—';
+  const order = parseInt(document.getElementById('orderSelect').value, 10);
+  document.getElementById('btreeOrderLabel').textContent = `(order ${order})`;
+
+  const avlLog = [];
+  const bLog = [];
+
+  const binRoot = buildBinaryComplete(sequence);
+  const bstRoot = buildBST(sequence);
+  const avlRoot = buildAVL(sequence, avlLog);
+  const bRoot   = buildBTree(sequence, order, bLog);
+
+  renderBinary('canvas-binary', binRoot, '#6fa8dc');
+  renderBinary('canvas-bst', bstRoot, '#93c47d');
+  renderBinary('canvas-avl', avlRoot, '#e0a458');
+  renderBTree('canvas-btree', bRoot, '#c77dff');
+
+  const hBin = binaryHeight(binRoot), nBin = binaryCount(binRoot);
+  const hBst = binaryHeight(bstRoot), nBst = binaryCount(bstRoot);
+  const hAvl = binaryHeight(avlRoot), nAvl = binaryCount(avlRoot);
+  const hB = bTreeHeight(bRoot), nB = bTreeNodeCount(bRoot);
+
+  document.getElementById('stats-binary').textContent = `height ${hBin}  ·  nodes ${nBin}`;
+  document.getElementById('stats-bst').textContent = `height ${hBst}  ·  nodes ${nBst}`;
+  document.getElementById('stats-avl').textContent = `height ${hAvl}  ·  nodes ${nAvl}  ·  rotations ${avlLog.length}`;
+  document.getElementById('stats-btree').textContent = `height ${hB}  ·  nodes ${nB}  ·  splits ${bLog.length}`;
+
+  const avlLogEl = document.getElementById('log-avl');
+  avlLogEl.innerHTML = avlLog.length
+    ? avlLog.map(l=>`<div><span class="flag">·</span> ${l}</div>`).join('')
+    : '<div class="empty-note">no imbalance triggered yet — the tree stayed balanced on its own</div>';
+
+  const bLogEl = document.getElementById('log-btree');
+  bLogEl.innerHTML = bLog.length
+    ? bLog.map(l=>`<div><span class="flag">·</span> ${l}</div>`).join('')
+    : `<div class="empty-note">no node has exceeded ${order-1} keys yet</div>`;
+
+  // summary table
+  const summaryBody = document.getElementById('summaryBody');
+  if(sequence.length === 0){
+    summaryBody.innerHTML = '<tr><td colspan="5" class="n">insert values above to populate this table</td></tr>';
+  } else {
+    summaryBody.innerHTML = `
+      <tr><td>Binary Tree</td><td>${hBin}</td><td>${nBin}</td><td>—</td><td>none — fills left to right, level by level</td></tr>
+      <tr><td>Binary Search Tree</td><td>${hBst}</td><td>${nBst}</td><td>—</td><td>left &lt; node &lt; right</td></tr>
+      <tr><td>AVL Tree</td><td>${hAvl}</td><td>${nAvl}</td><td>${avlLog.length} rotation(s)</td><td>BST rule + height-balanced</td></tr>
+      <tr><td>B-Tree (order ${order})</td><td>${hB}</td><td>${nB}</td><td>${bLog.length} split(s)</td><td>sorted keys per node, ≤ ${order-1} keys/node</td></tr>
+    `;
+  }
+
+  // traversal block (from BST, since it holds a clean ordering)
+  const travBlock = document.getElementById('traversalBlock');
+  if(sequence.length === 0){
+    travBlock.style.display = 'none';
+  } else {
+    travBlock.style.display = 'block';
+    const io=[], pre=[], post=[];
+    inorder(bstRoot, io); preorder(bstRoot, pre); postorder(bstRoot, post);
+    document.getElementById('trav-inorder').textContent = io.join(', ');
+    document.getElementById('trav-preorder').textContent = pre.join(', ');
+    document.getElementById('trav-postorder').textContent = post.join(', ');
+  }
+}
+
+// ============================================================
+// Controls
+// ============================================================
+document.getElementById('insertBtn').addEventListener('click', ()=>{
+  const input = document.getElementById('valInput');
+  const v = parseInt(input.value, 10);
+  if(!isNaN(v)){
+    sequence.push(v);
+    input.value = '';
+    rebuild();
+  }
+});
+document.getElementById('valInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') document.getElementById('insertBtn').click();
+});
+document.getElementById('bulkBtn').addEventListener('click', ()=>{
+  const input = document.getElementById('bulkInput');
+  const vals = input.value.split(',').map(s=>parseInt(s.trim(),10)).filter(n=>!isNaN(n));
+  if(vals.length){
+    sequence = sequence.concat(vals);
+    input.value = '';
+    rebuild();
+  }
+});
+document.getElementById('bulkInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') document.getElementById('bulkBtn').click();
+});
+document.getElementById('undoBtn').addEventListener('click', ()=>{
+  sequence.pop();
+  rebuild();
+});
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  sequence = [];
+  rebuild();
+});
+document.getElementById('orderSelect').addEventListener('change', rebuild);
+
+rebuild();
+</script>
+</body>
+</html>
