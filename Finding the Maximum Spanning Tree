@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct {
+    int u, v, w;
+} Edge;
+
+int parent[100];
+
+int find(int x) {
+    if (parent[x] == x)
+        return x;
+    return parent[x] = find(parent[x]);
+}
+
+void unite(int a, int b) {
+    parent[find(a)] = find(b);
+}
+
+int compare(const void *a, const void *b) {
+    Edge *x = (Edge *)a;
+    Edge *y = (Edge *)b;
+    return y->w - x->w;   // Descending
+}
+
+int main() {
+    int n, e;
+    Edge edges[100];
+
+    scanf("%d %d", &n, &e);
+
+    for (int i = 0; i < e; i++)
+        scanf("%d %d %d", &edges[i].u, &edges[i].v, &edges[i].w);
+
+    for (int i = 0; i < n; i++)
+        parent[i] = i;
+
+    qsort(edges, e, sizeof(Edge), compare);
+
+    int count = 0, total = 0;
+
+    for (int i = 0; i < e && count < n - 1; i++) {
+        if (find(edges[i].u) != find(edges[i].v)) {
+            unite(edges[i].u, edges[i].v);
+            printf("%d - %d : %d\n",
+                   edges[i].u, edges[i].v, edges[i].w);
+            total += edges[i].w;
+            count++;
+        }
+    }
+
+    printf("Maximum Spanning Tree Weight = %d\n", total);
+    return 0;
+}
