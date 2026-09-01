@@ -1,0 +1,35 @@
+#include <stdio.h>
+#define MAX 5
+
+int queue[MAX];
+int front = 0, rear = -1;
+
+void enqueue(int customer)
+{
+    if (rear == MAX - 1)
+        printf("Queue Full\n");
+    else
+        queue[++rear] = customer;
+}
+
+void dequeue()
+{
+    if (front > rear)
+        printf("Queue Empty\n");
+    else
+        printf("Serving Customer %d\n", queue[front++]);
+}
+
+int main()
+{
+    enqueue(101);
+    enqueue(102);
+    enqueue(103);
+    enqueue(104);
+
+    dequeue();
+    dequeue();
+    dequeue();
+
+    return 0;
+}
