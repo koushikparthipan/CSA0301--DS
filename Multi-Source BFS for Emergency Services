@@ -1,0 +1,65 @@
+#include <stdio.h>
+
+#define MAX 100
+
+int main() {
+    int n, graph[MAX][MAX];
+    int visited[MAX] = {0};
+    int source[MAX];
+    int queue[MAX];
+
+    int front = 0, rear = 0;
+    int stations, target;
+
+    printf("Enter number of locations: ");
+    scanf("%d", &n);
+
+    printf("Enter adjacency matrix:\n");
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            scanf("%d", &graph[i][j]);
+
+    printf("Enter number of fire stations: ");
+    scanf("%d", &stations);
+
+    printf("Enter fire station nodes:\n");
+
+    for (int i = 0; i < stations; i++) {
+        int s;
+        scanf("%d", &s);
+
+        visited[s] = 1;
+        source[s] = s;
+        queue[rear++] = s;
+    }
+
+    printf("Enter fire location: ");
+    scanf("%d", &target);
+
+    while (front < rear) {
+
+        int u = queue[front++];
+
+        if (u == target) {
+            printf("Fire station %d reaches first\n",
+                   source[u]);
+            return 0;
+        }
+
+        for (int v = 0; v < n; v++) {
+
+            if (graph[u][v] && !visited[v]) {
+
+                visited[v] = 1;
+                source[v] = source[u];
+
+                queue[rear++] = v;
+            }
+        }
+    }
+
+    printf("Target cannot be reached\n");
+
+    return 0;
+}
