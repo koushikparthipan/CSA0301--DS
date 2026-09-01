@@ -1,0 +1,53 @@
+#include <stdio.h>
+
+#define MAX 50
+
+int main() {
+
+    int n;
+    int graph[MAX][MAX];
+    int color[MAX];
+
+    scanf("%d", &n);
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            scanf("%d", &graph[i][j]);
+
+    for (int i = 0; i < n; i++)
+        color[i] = -1;
+
+    color[0] = 0;
+
+    for (int u = 1; u < n; u++) {
+
+        int available[MAX];
+
+        for (int i = 0; i < n; i++)
+            available[i] = 1;
+
+        for (int v = 0; v < n; v++) {
+
+            if (graph[u][v] &&
+                color[v] != -1)
+
+                available[color[v]] = 0;
+        }
+
+        int c;
+
+        for (c = 0; c < n; c++)
+            if (available[c])
+                break;
+
+        color[u] = c;
+    }
+
+    printf("Task -> Time Slot\n");
+
+    for (int i = 0; i < n; i++)
+        printf("%d -> %d\n",
+               i, color[i]);
+
+    return 0;
+}
