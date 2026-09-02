@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Campus Bike Sharing Management System — DSA01</title>
+<style>
+  :root{
+    --dock-teal:#0F3B3C;
+    --dock-teal-deep:#0A2A2B;
+    --lane-lime:#C7E24B;
+    --concrete:#EFEEE6;
+    --panel:#F8F7F1;
+    --ink:#131A19;
+    --ink-soft:#4C6260;
+    --line:#D8D5C8;
+    --coral:#E2643B;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    --sans: "Helvetica Neue", Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--concrete);color:var(--ink);font-family:var(--sans);}
+  ::selection{background:var(--lane-lime);color:var(--ink);}
+
+  .shell{display:flex;min-height:100vh;}
+  .rail{
+    width:260px;flex:0 0 260px;background:var(--dock-teal);color:var(--concrete);
+    padding:28px 20px;position:sticky;top:0;height:100vh;overflow-y:auto;
+  }
+  .rail-brand{font-size:13px;letter-spacing:0.02em;color:var(--lane-lime);margin-bottom:2px;font-weight:700;}
+  .rail-sub{font-size:12px;color:#9FC0BE;margin-bottom:26px;line-height:1.5;}
+  .lane{position:relative;padding-left:22px;}
+  .lane::before{
+    content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;
+    background:repeating-linear-gradient(180deg,var(--lane-lime) 0 6px, transparent 6px 12px);
+  }
+  .stop{
+    position:relative;display:block;width:100%;text-align:left;background:none;border:none;
+    color:#D9E7E3;font-family:inherit;font-size:14.5px;padding:10px 0 10px 14px;cursor:pointer;
+    border-radius:0;line-height:1.3;
+  }
+  .stop::before{
+    content:"";position:absolute;left:-22px;top:14px;width:9px;height:9px;border-radius:50%;
+    background:var(--dock-teal);border:2px solid #6E8E8B;
+  }
+  .stop small{display:block;color:#7FA09D;font-size:10.5px;margin-top:2px;}
+  .stop.active{color:#fff;font-weight:700;}
+  .stop.active::before{background:var(--lane-lime);border-color:var(--lane-lime);}
+  .stop:hover{color:#fff;}
+  .rail-group-label{font-size:11px;color:#6E8E8B;margin:22px 0 4px 0;font-weight:600;}
+
+  .rail-footer{margin-top:30px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.12);}
+  .print-btn{
+    width:100%;background:var(--lane-lime);color:var(--dock-teal-deep);border:none;
+    padding:12px 14px;font-weight:700;font-size:13px;cursor:pointer;border-radius:3px;
+  }
+  .print-btn:hover{background:#d7ec72;}
+  .print-note{font-size:11px;color:#8FB0AD;margin-top:8px;line-height:1.5;}
+
+  main{flex:1;padding:48px 60px;max-width:900px;}
+  .page{display:none;}
+  .page.active{display:block;}
+  .eyebrow-row{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;}
+  .module-tag{
+    background:var(--dock-teal);color:var(--lane-lime);font-size:12px;font-weight:700;
+    padding:3px 9px;border-radius:2px;
+  }
+  h1{font-size:32px;margin:0 0 6px 0;letter-spacing:-0.01em;}
+  h2{font-size:22px;margin:36px 0 12px 0;border-bottom:2px solid var(--ink);padding-bottom:8px;}
+  h3{font-size:16px;margin:22px 0 8px 0;color:var(--dock-teal);}
+  p{line-height:1.65;max-width:70ch;}
+  .lede{font-size:16px;color:var(--ink-soft);max-width:62ch;margin-top:14px;}
+
+  table{border-collapse:collapse;width:100%;margin:18px 0;font-size:14px;}
+  td,th{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top;}
+  th{background:var(--dock-teal);color:#fff;font-weight:600;}
+
+  .diagram{
+    background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--dock-teal);
+    padding:18px 22px;margin:20px 0;font-family:var(--mono);font-size:13px;line-height:1.7;
+    white-space:pre;overflow-x:auto;
+  }
+  .concept-strip{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 4px 0;}
+  .chip{background:var(--dock-teal);color:var(--lane-lime);font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;}
+  .chip.alt{background:var(--coral);color:#fff;}
+
+  pre.code{
+    background:var(--dock-teal-deep);color:#E3F0EC;padding:20px 22px;overflow-x:auto;
+    font-family:var(--mono);font-size:12.6px;line-height:1.6;border-radius:3px;margin:14px 0;
+  }
+  .code-label{font-size:12px;color:var(--ink-soft);margin:18px 0 -6px 0;font-weight:600;}
+  .kw{color:#7FD7C4;} .tp{color:var(--lane-lime);} .cm{color:#7A9490;font-style:italic;}
+
+  .btn-row{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;}
+  .btn{
+    display:inline-block;background:var(--dock-teal);color:#fff;text-decoration:none;
+    padding:10px 18px;font-size:13.5px;font-weight:600;border-radius:3px;border:none;cursor:pointer;
+  }
+  .btn.ghost{background:transparent;color:var(--dock-teal);border:1.5px solid var(--dock-teal);}
+  .btn:hover{opacity:0.88;}
+
+  .nav-foot{display:flex;justify-content:space-between;margin-top:52px;padding-top:20px;border-top:1px solid var(--line);}
+  .nav-foot a{color:var(--dock-teal);font-weight:600;text-decoration:none;font-size:14px;cursor:pointer;}
+  .nav-foot a:hover{text-decoration:underline;}
+
+  .drop{
+    border:2px dashed var(--line);padding:26px;text-align:center;border-radius:4px;background:var(--panel);
+    color:var(--ink-soft);font-size:13.5px;
+  }
+  .shots{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+  .shots img{width:100%;border:1px solid var(--line);border-radius:2px;display:block;}
+  .shot-slot{background:var(--panel);border:1px solid var(--line);min-height:140px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#9AA6A4;border-radius:2px;}
+
+  textarea{
+    width:100%;min-height:230px;font-family:var(--sans);font-size:14px;line-height:1.6;
+    padding:16px;border:1px solid var(--line);border-radius:3px;resize:vertical;background:#fff;
+  }
+  .field-label{font-size:12.5px;font-weight:700;color:var(--dock-teal);margin:16px 0 6px 0;display:block;}
+
+  @media print{
+    .rail{display:none;}
+    main{max-width:100%;padding:0 6px;}
+    .page{display:block !important;page-break-after:always;}
+    .nav-foot,.print-note,.btn-row{display:none !important;}
+    pre.code{white-space:pre-wrap;}
+  }
+  @media (max-width:820px){
+    .shell{flex-direction:column;}
+    .rail{position:relative;height:auto;width:100%;flex:none;}
+    main{padding:28px 20px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <nav class="rail" id="rail">
+    <div class="rail-brand">DSA01 · SUBMISSION</div>
+    <div class="rail-sub">Smart Campus Bike Sharing<br>Management System — C++</div>
+
+    <div class="lane">
+      <button class="stop" data-page="pseudocode">Pseudocode<small>System logic, module by module</small></button>
+
+      <div class="rail-group-label">Implementation — 4 modules</div>
+      <button class="stop" data-page="m1">01 · Rider Management<small>class Rider</small></button>
+      <button class="stop" data-page="m2">02 · Cycle Fleet Management<small>class CampusCycle</small></button>
+      <button class="stop" data-page="m3">03 · Trip Management<small>class TripLog</small></button>
+      <button class="stop" data-page="m4">04 · Impact Reports<small>operator overloads in use</small></button>
+
+      <div class="rail-group-label">Wrap-up</div>
+      <button class="stop" data-page="output">Output &amp; Screenshots<small>Add your run screenshots</small></button>
+      <button class="stop" data-page="contribution">Individual Contribution<small>One page per student</small></button>
+    </div>
+
+    <div class="rail-footer">
+      <button class="print-btn" onclick="window.print()">Export single document</button>
+      <div class="print-note">Prints every page in order (pseudocode → code → screenshots → write-up) as one PDF for submission, per the faculty guideline.</div>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- PSEUDOCODE -->
+    <section class="page active" id="page-pseudocode">
+      <div class="eyebrow-row"><span class="module-tag">STEP 1</span></div>
+      <h1>Pseudocode</h1>
+      <p class="lede">High-level logic for the four modules, in the order they run from the main menu.</p>
+
+      <div class="diagram">BEGIN
+  INITIALISE empty arrays: riders[], cycles[], logs[]
+  LOOP main menu until "Exit":
+
+    MODULE 1 — RIDER MANAGEMENT
+      IF "Register Rider":
+        READ id, name, category
+        CREATE Rider(id, name, category)      // parameterized constructor
+        APPEND to riders[]; totalRiders++
+      IF "View Riders": PRINT id, name, ecoPoints, tier(ecoPoints)
+
+    MODULE 2 — CYCLE FLEET MANAGEMENT
+      IF "Add Cycle":
+        READ id, model, dock
+        CREATE CampusCycle(id, model, dock)
+        APPEND to cycles[]; totalCycles++
+      IF "View Fleet": PRINT id, model, dock, tripCount, status
+      IF "Service a Cycle": CLEAR needsMaintenance flag, reset tripCount
+
+    MODULE 3 — TRIP MANAGEMENT
+      IF "Log a Trip":
+        READ riderId, cycleId
+        FIND rider, cycle by id
+        IF cycle.isAvailable():
+          cycle.checkOut()
+          READ distanceKm, minutesUsed, isPeakHour
+          discount = rider's loyalty-tier discount
+          fare = BASE + distanceKm*RATE_KM + minutesUsed*RATE_MIN
+          IF isPeakHour: fare *= 1.2
+          fare *= (1 - discount)
+          ecoPoints = distanceKm * (isPeakHour ? 1 : 2)   // off-peak earns more
+          co2Saved  = distanceKm * CO2_PER_KM
+          CREATE TripLog(id, riderId, cycleId, ...)
+          APPEND to logs[]; totalTrips++; totalFare += fare; totalCO2 += co2Saved
+          rider += ecoPoints            // operator+=  folds points into the rider
+          ++cycle                       // operator++  ages the cycle toward service
+          cycle.checkIn(newDock)
+        ELSE: PRINT "cycle unavailable"
+
+    MODULE 4 — IMPACT REPORTS & COMPARISON
+      IF "Compare two trips":
+        READ tripA, tripB
+        IF tripA > tripB (operator>, by CO2 saved): PRINT "A was the greener ride"
+        ELSE IF tripB > tripA: PRINT "B was the greener ride"
+        ELSE: PRINT "equal impact"
+      IF "Impact report":
+        PRINT totalRiders, totalCycles, totalTrips, totalFare, totalCO2Saved
+        PRINT cyclesAvailable / totalCycles, cyclesNeedingService
+
+  ON EXIT: destructors run for every Rider, CampusCycle, TripLog object
+END</div>
+
+      <div class="nav-foot"><span></span><a data-goto="m1">Next: Module 1 →</a></div>
+    </section>
+
+    <!-- MODULE 1 -->
+    <section class="page" id="page-m1">
+      <div class="eyebrow-row"><span class="module-tag">MODULE 1 / 4</span></div>
+      <h1>Rider Management</h1>
+      <p class="lede">Registers students and staff and tracks the eco-points each one has earned — the basis for the loyalty tier that later discounts their fares.</p>
+
+      <div class="concept-strip">
+        <span class="chip">Default constructor</span>
+        <span class="chip">Parameterized constructor</span>
+        <span class="chip">Copy constructor</span>
+        <span class="chip">Static member</span>
+        <span class="chip alt">operator+= (Module 4 uses it)</span>
+      </div>
+
+      <div class="diagram">┌──────────────── Rider ────────────────┐
+│ - riderId : int                        │
+│ - name[40], category[10] : char        │
+│ - ecoPoints : int                      │
+│ - totalRiders : static int             │
+├──────────────────────────────────────  ┤
+│ - computeTier() const → private        │  Bronze / Silver / Gold
+├──────────────────────────────────────  ┤
+│ + Rider() / Rider(id,name,cat)         │
+│ + Rider(const Rider&)  /  ~Rider()     │
+│ + operator+=(int pointsEarned)         │  ← folds a trip's points in
+│ + discountForTier() const              │
+└──────────────────────────────────────  ┘</div>
+
+      <div class="code-label">Tier computed from accumulated eco-points</div>
+      <pre class="code"><span class="kw">const char*</span> computeTier() <span class="kw">const</span> {
+  <span class="kw">if</span> (ecoPoints >= 150) <span class="kw">return</span> <span class="tp">"Gold"</span>;
+  <span class="kw">if</span> (ecoPoints >= 50)  <span class="kw">return</span> <span class="tp">"Silver"</span>;
+  <span class="kw">return</span> <span class="tp">"Bronze"</span>;
+}</pre>
+
+      <div class="btn-row">
+        <button class="btn" onclick="downloadSource()">Download campus_bike_sharing.cpp</button>
+      </div>
+
+      <div class="nav-foot"><a data-goto="pseudocode">← Pseudocode</a><a data-goto="m2">Next: Module 2 →</a></div>
+    </section>
+
+    <!-- MODULE 2 -->
+    <section class="page" id="page-m2">
+      <div class="eyebrow-row"><span class="module-tag">MODULE 2 / 4</span></div>
+      <h1>Cycle Fleet Management</h1>
+      <p class="lede">Tracks the physical fleet — including wear. Every trip ages a cycle, and after enough trips it automatically pulls itself out of service until an admin runs maintenance.</p>
+
+      <div class="concept-strip">
+        <span class="chip">Encapsulation</span>
+        <span class="chip">Static counters (fleet + service queue)</span>
+        <span class="chip alt">operator++ (prefix)</span>
+      </div>
+
+      <div class="diagram">┌───────────── CampusCycle ─────────────┐
+│ - cycleId : int                        │
+│ - model[30], dock[30] : char           │
+│ - inUse, needsMaintenance : bool       │
+│ - tripCount : int                      │  wear counter
+│ - totalCycles, retiredForService: static│
+├──────────────────────────────────────  ┤
+│ + CampusCycle() / (id,model,dock)      │
+│ + CampusCycle(const CampusCycle&)      │
+│ + checkOut() / checkIn(newDock)        │
+│ + service()   → clears wear, re-enters │
+│ + operator++()  → ages the cycle       │  ← mutates + can retire the object
+└──────────────────────────────────────  ┘</div>
+
+      <div class="code-label">operator++ controls the cycle's own lifecycle</div>
+      <pre class="code">CampusCycle& operator++() {
+  tripCount++;
+  <span class="kw">if</span> (tripCount >= MAINTENANCE_THRESHOLD && !needsMaintenance) {
+    needsMaintenance = <span class="kw">true</span>;      <span class="cm">// pulled from service automatically</span>
+    retiredForService++;
+  }
+  <span class="kw">return</span> *<span class="kw">this</span>;
+}</pre>
+
+      <p>This is the overload the assignment's own wording points at — using an operator "to control object creation, destruction, and operator behaviour." Here <code>++cycle</code> isn't decoration: it's the one place a cycle's fate is decided.</p>
+
+      <div class="btn-row">
+        <button class="btn" onclick="downloadSource()">Download campus_bike_sharing.cpp</button>
+      </div>
+
+      <div class="nav-foot"><a data-goto="m1">← Module 1</a><a data-goto="m3">Next: Module 3 →</a></div>
+    </section>
+
+    <!-- MODULE 3 -->
+    <section class="page" id="page-m3">
+      <div class="eyebrow-row"><span class="module-tag">MODULE 3 / 4</span></div>
+      <h1>Trip Management</h1>
+      <p class="lede">Links a rider to a cycle for one trip, and computes three things at the moment it ends: fare (with peak-hour surcharge and loyalty discount), eco-points earned, and CO2 avoided.</p>
+
+      <div class="concept-strip">
+        <span class="chip">Composition</span>
+        <span class="chip">Constructors &amp; destructor</span>
+        <span class="chip">Private helper function</span>
+        <span class="chip">Control structures (CO1)</span>
+      </div>
+
+      <div class="diagram">┌────────────── TripLog ──────────────┐
+│ - logId, riderId, cycleId : int      │
+│ - distanceKm, minutesUsed : float    │
+│ - peakHour : bool                    │
+│ - fare, co2SavedGrams : float        │
+│ - ecoPointsEarned : int              │
+│ - totalTrips, totalFareCollected,    │
+│   totalCO2SavedGrams : static        │
+├─────────────────────────────────────  ┤
+│ - computeFare(discount) const        │  private
+│ + TripLog(...) / copy ctor / dtor    │
+│ + operator&lt;&lt;  (stream a trip)       │
+└─────────────────────────────────────  ┘
+
+fare = (BASE 5 + distanceKm×3 + minutesUsed×0.4) × peakMultiplier × (1 − loyaltyDiscount)
+ecoPoints = distanceKm × (peak ? 1 : 2)      // off-peak trips earn double
+co2SavedGrams = distanceKm × 120             // vs. an average car trip</div>
+
+      <div class="code-label">Fare calculation, in order</div>
+      <pre class="code"><span class="kw">float</span> raw = BASE + (distanceKm * PER_KM) + (minutesUsed * PER_MIN);
+<span class="kw">if</span> (peakHour) raw *= 1.2f;              <span class="cm">// peak-hour surcharge</span>
+<span class="kw">return</span> raw * (1.0f - discount);       <span class="cm">// loyalty discount applied last</span></pre>
+
+      <div class="btn-row">
+        <button class="btn" onclick="downloadSource()">Download campus_bike_sharing.cpp</button>
+      </div>
+
+      <div class="nav-foot"><a data-goto="m2">← Module 2</a><a data-goto="m4">Next: Module 4 →</a></div>
+    </section>
+
+    <!-- MODULE 4 -->
+    <section class="page" id="page-m4">
+      <div class="eyebrow-row"><span class="module-tag">MODULE 4 / 4</span></div>
+      <h1>Impact Reports &amp; Comparison</h1>
+      <p class="lede">Where all three custom operators actually get called — this is the module the whole design was built to serve.</p>
+
+      <div class="concept-strip">
+        <span class="chip alt">operator&gt; (greener ride, not cheaper)</span>
+        <span class="chip alt">operator+=</span>
+        <span class="chip alt">operator++</span>
+        <span class="chip">Static member reads</span>
+      </div>
+
+      <div class="code-label">Closing out a trip (Module 3, called from the menu)</div>
+      <pre class="code">riders[ri] += logs[logCount].getEcoPoints();   <span class="cm">// operator+=  points → rider</span>
+++cycles[ci];                                    <span class="cm">// operator++  wear → cycle</span></pre>
+
+      <div class="code-label">Comparing two trips by environmental impact, not cost</div>
+      <pre class="code"><span class="kw">if</span> (t1 > t2)                                  <span class="cm">// operator&gt; by CO2 saved</span>
+  cout &lt;&lt; <span class="tp">"Trip #"</span> &lt;&lt; a &lt;&lt; <span class="tp">" was the greener ride.\n"</span>;</pre>
+
+      <p>A plain rental clone would overload <code>&lt;</code> or <code>+</code> to compare and total <em>fares</em> — every generic tutorial online does exactly that. Here the comparison is deliberately about the metric the brief's SDG mapping cares about: emissions avoided, not money collected.</p>
+
+      <div class="diagram">CAMPUS IMPACT REPORT
+────────────────────────────
+Total Riders            : 12
+Total Cycles in Fleet   : 8  (needing service: 1)
+Total Trips Logged      : 27
+Total Fare Collected    : Rs.842.50
+Total CO2 Avoided       : 118 kg
+Cycles Currently Free   : 5 / 8</div>
+
+      <div class="btn-row">
+        <button class="btn" onclick="downloadSource()">Download campus_bike_sharing.cpp</button>
+      </div>
+
+      <div class="nav-foot"><a data-goto="m3">← Module 3</a><a data-goto="output">Next: Output &amp; Screenshots →</a></div>
+    </section>
+
+    <!-- OUTPUT / SCREENSHOTS -->
+    <section class="page" id="page-output">
+      <div class="eyebrow-row"><span class="module-tag">STEP 2</span></div>
+      <h1>Implementation &amp; Output</h1>
+      <p class="lede">Compile and run <code>campus_bike_sharing.cpp</code>, then drop your terminal screenshots in below. They'll appear here and print with the rest of the document.</p>
+
+      <div class="drop">
+        <input type="file" id="shotInput" accept="image/*" multiple>
+        <div style="margin-top:8px;">Select one or more screenshots of your program running (menu, a logged trip, the impact report).</div>
+      </div>
+      <div class="shots" id="shotGrid">
+        <div class="shot-slot">Screenshot 1 will appear here</div>
+        <div class="shot-slot">Screenshot 2 will appear here</div>
+      </div>
+
+      <h3>Suggested runs to capture</h3>
+      <table>
+        <tr><th>#</th><th>What to show</th></tr>
+        <tr><td>1</td><td>Main menu + registering a rider and a cycle</td></tr>
+        <tr><td>2</td><td>Logging a peak-hour trip and an off-peak trip (different fare/points)</td></tr>
+        <tr><td>3</td><td>Comparing two trips — the operator&gt; "greener ride" output</td></tr>
+        <tr><td>4</td><td>A cycle crossing the maintenance threshold (operator++ effect)</td></tr>
+        <tr><td>5</td><td>The final campus impact report</td></tr>
+      </table>
+
+      <div class="nav-foot"><a data-goto="m4">← Module 4</a><a data-goto="contribution">Next: Individual Contribution →</a></div>
+    </section>
+
+    <!-- INDIVIDUAL CONTRIBUTION -->
+    <section class="page" id="page-contribution">
+      <div class="eyebrow-row"><span class="module-tag">STEP 3</span></div>
+      <h1>Individual Contribution</h1>
+      <p class="lede">Faculty requires one page per student describing their own contribution — no names or register numbers anywhere in the document. Fill this in once per team member before exporting.</p>
+
+      <span class="field-label">Modules / tasks I worked on</span>
+      <textarea placeholder="e.g. Designed and implemented the CampusCycle class (Module 2), including the operator++ wear/maintenance logic and the service() reset."></textarea>
+
+      <span class="field-label">Testing &amp; debugging done</span>
+      <textarea placeholder="e.g. Verified the maintenance threshold triggers at exactly 15 trips; fixed a bug where a serviced cycle wasn't decrementing the retiredForService counter."></textarea>
+
+      <span class="field-label">Documentation / GitHub work</span>
+      <textarea placeholder="e.g. Wrote the pseudocode for Module 3 and Module 4, pushed the working source to the team GitHub repository with a README describing build steps."></textarea>
+
+      <div class="nav-foot"><a data-goto="output">← Output &amp; Screenshots</a><span></span></div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  const stops = document.querySelectorAll('.stop');
+  const pages = document.querySelectorAll('.page');
+
+  function goto(id){
+    pages.forEach(p => p.classList.toggle('active', p.id === 'page-' + id));
+    stops.forEach(s => s.classList.toggle('active', s.dataset.page === id));
+    document.querySelector('main').scrollTo(0,0);
+    window.scrollTo(0,0);
+  }
+  stops.forEach(s => s.addEventListener('click', () => goto(s.dataset.page)));
+  document.querySelectorAll('[data-goto]').forEach(el =>
+    el.addEventListener('click', e => { e.preventDefault(); goto(el.dataset.goto); })
+  );
+  goto('pseudocode');
+
+  document.getElementById('shotInput').addEventListener('change', function(e){
+    const grid = document.getElementById('shotGrid');
+    grid.innerHTML = '';
+    const files = Array.from(e.target.files);
+    if(files.length === 0){
+      grid.innerHTML = '<div class="shot-slot">Screenshot 1 will appear here</div><div class="shot-slot">Screenshot 2 will appear here</div>';
+      return;
+    }
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = document.createElement('img');
+        img.src = ev.target.result;
+        grid.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  function downloadSource(){
+    const code = document.getElementById('fullSource').textContent;
+    const blob = new Blob([code], {type:'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'campus_bike_sharing.cpp';
+    a.click();
+  }
+</script>
+
+<pre id="fullSource" style="display:none;">/*
+    Smart Campus Bike Sharing Management System
+    Course: DSA01 - Object Oriented Programming with C++
+    ------------------------------------------------------------------
+    Design angle: instead of a plain rental ledger, the system tracks
+    the sustainability impact of every trip (SDG 7 / 11 / 12 from the
+    brief) — eco-points, rider loyalty tiers, peak-hour pricing, and
+    cycle wear/maintenance — so the class design and operator use are
+    driven by that theme rather than a generic &quot;rent-a-bike&quot; template.
+
+    OOP coverage:
+      - Classes, encapsulation, access specifiers, member functions
+      - Default / parameterized / copy constructors + destructors
+      - Static members (campus-wide counters)
+      - Arrays of objects
+      - Operator overloading used for actual system behaviour, not just
+        display: prefix ++ ages a cycle toward maintenance, += folds a
+        trip&#x27;s eco-points into a rider, and &gt; ranks trips by CO2 saved.
+*/
+
+#include &lt;iostream&gt;
+#include &lt;iomanip&gt;
+#include &lt;cstring&gt;
+using namespace std;
+
+const int MAX_RIDERS = 50;
+const int MAX_CYCLES = 50;
+const int MAX_LOGS   = 100;
+const int MAINTENANCE_THRESHOLD = 15;   // trips before a cycle needs servicing
+const float CO2_PER_KM_GRAMS   = 120.0f; // avg car emissions avoided per km cycled
+
+// ---------------------------------------------------------
+// MODULE 1 : RIDER MANAGEMENT -&gt; class Rider
+// ---------------------------------------------------------
+class Rider {
+private:
+    int riderId;
+    char name[40];
+    char category[10];     // &quot;Student&quot; or &quot;Staff&quot;
+    int ecoPoints;          // earned from trips, drives the loyalty tier
+    static int totalRiders;
+
+    const char* computeTier() const {
+        if (ecoPoints &gt;= 150) return &quot;Gold&quot;;
+        if (ecoPoints &gt;= 50)  return &quot;Silver&quot;;
+        return &quot;Bronze&quot;;
+    }
+
+public:
+    Rider() {
+        riderId = 0; strcpy(name, &quot;N/A&quot;); strcpy(category, &quot;N/A&quot;); ecoPoints = 0;
+    }
+
+    Rider(int id, const char* n, const char* cat) {
+        riderId = id; strcpy(name, n); strcpy(category, cat); ecoPoints = 0;
+        totalRiders++;
+    }
+
+    Rider(const Rider &amp;r) {
+        riderId = r.riderId; strcpy(name, r.name); strcpy(category, r.category);
+        ecoPoints = r.ecoPoints; totalRiders++;
+    }
+
+    ~Rider() { /* rider leaves the scheme; object lifetime ends cleanly */ }
+
+    int getId() const { return riderId; }
+    int getEcoPoints() const { return ecoPoints; }
+    float discountForTier() const {
+        const char* t = computeTier();
+        if (strcmp(t, &quot;Gold&quot;) == 0)   return 0.15f;
+        if (strcmp(t, &quot;Silver&quot;) == 0) return 0.05f;
+        return 0.0f;
+    }
+
+    // Operator overload #1: folds a completed trip&#x27;s eco-points straight
+    // into the rider (defined properly once TripLog is declared below).
+    Rider&amp; operator+=(int pointsEarned) {
+        ecoPoints += pointsEarned;
+        return *this;
+    }
+
+    void display() const {
+        cout &lt;&lt; left &lt;&lt; setw(6) &lt;&lt; riderId &lt;&lt; setw(18) &lt;&lt; name &lt;&lt; setw(9) &lt;&lt; category
+             &lt;&lt; setw(8) &lt;&lt; ecoPoints &lt;&lt; computeTier() &lt;&lt; endl;
+    }
+
+    static int getTotalRiders() { return totalRiders; }
+};
+int Rider::totalRiders = 0;
+
+// ---------------------------------------------------------
+// MODULE 2 : CYCLE FLEET MANAGEMENT -&gt; class CampusCycle
+// ---------------------------------------------------------
+class CampusCycle {
+private:
+    int cycleId;
+    char model[30];
+    char dock[30];
+    bool inUse;
+    int tripCount;          // wear counter
+    bool needsMaintenance;
+    static int totalCycles;
+    static int retiredForService;
+
+public:
+    CampusCycle() {
+        cycleId = 0; strcpy(model, &quot;N/A&quot;); strcpy(dock, &quot;Dock-0&quot;);
+        inUse = false; tripCount = 0; needsMaintenance = false;
+    }
+
+    CampusCycle(int id, const char* m, const char* dockName) {
+        cycleId = id; strcpy(model, m); strcpy(dock, dockName);
+        inUse = false; tripCount = 0; needsMaintenance = false;
+        totalCycles++;
+    }
+
+    CampusCycle(const CampusCycle &amp;c) {
+        cycleId = c.cycleId; strcpy(model, c.model); strcpy(dock, c.dock);
+        inUse = c.inUse; tripCount = c.tripCount; needsMaintenance = c.needsMaintenance;
+        totalCycles++;
+    }
+
+    ~CampusCycle() { /* cycle decommissioned / object destroyed */ }
+
+    int getId() const { return cycleId; }
+    bool isAvailable() const { return !inUse &amp;&amp; !needsMaintenance; }
+    bool flaggedForService() const { return needsMaintenance; }
+
+    void checkOut() { inUse = true; }
+    void checkIn(const char* newDock) { inUse = false; strcpy(dock, newDock); }
+
+    void service() {                 // admin action: clears wear, re-enters fleet
+        if (needsMaintenance) { needsMaintenance = false; tripCount = 0; retiredForService--; }
+    }
+
+    // Operator overload #2: prefix ++ represents &quot;one more trip taken&quot; on
+    // this exact cycle. It mutates object state and, once the wear
+    // threshold is crossed, automatically pulls the cycle out of service —
+    // an operator directly controlling object behaviour, as the brief asks.
+    CampusCycle&amp; operator++() {
+        tripCount++;
+        if (tripCount &gt;= MAINTENANCE_THRESHOLD &amp;&amp; !needsMaintenance) {
+            needsMaintenance = true;
+            retiredForService++;
+        }
+        return *this;
+    }
+
+    void display() const {
+        cout &lt;&lt; left &lt;&lt; setw(6) &lt;&lt; cycleId &lt;&lt; setw(14) &lt;&lt; model &lt;&lt; setw(11) &lt;&lt; dock
+             &lt;&lt; setw(6) &lt;&lt; tripCount
+             &lt;&lt; (needsMaintenance ? &quot;Needs service&quot; : (inUse ? &quot;In-Use&quot; : &quot;Available&quot;)) &lt;&lt; endl;
+    }
+
+    static int getTotalCycles() { return totalCycles; }
+    static int getRetiredForService() { return retiredForService; }
+};
+int CampusCycle::totalCycles = 0;
+int CampusCycle::retiredForService = 0;
+
+// ---------------------------------------------------------
+// MODULE 3 : TRIP MANAGEMENT -&gt; class TripLog
+// ---------------------------------------------------------
+class TripLog {
+private:
+    int logId;
+    int riderId;
+    int cycleId;
+    float distanceKm;
+    float minutesUsed;
+    bool peakHour;
+    float fare;
+    int ecoPointsEarned;
+    float co2SavedGrams;
+    static int totalTrips;
+    static float totalFareCollected;
+    static float totalCO2SavedGrams;
+
+    float computeFare(float discount) const {
+        const float BASE = 5.0f, PER_KM = 3.0f, PER_MIN = 0.4f;
+        float raw = BASE + (distanceKm * PER_KM) + (minutesUsed * PER_MIN);
+        if (peakHour) raw *= 1.2f;           // peak-hour surcharge
+        return raw * (1.0f - discount);      // loyalty discount applied last
+    }
+
+public:
+    TripLog() {
+        logId = 0; riderId = 0; cycleId = 0; distanceKm = 0; minutesUsed = 0;
+        peakHour = false; fare = 0; ecoPointsEarned = 0; co2SavedGrams = 0;
+    }
+
+    TripLog(int id, int rId, int cId, float dist, float mins, bool peak, float riderDiscount) {
+        logId = id; riderId = rId; cycleId = cId;
+        distanceKm = dist; minutesUsed = mins; peakHour = peak;
+        fare = computeFare(riderDiscount);
+        // off-peak trips earn double points to nudge demand away from rush hour
+        ecoPointsEarned = (int)(distanceKm * (peak ? 1 : 2));
+        co2SavedGrams = distanceKm * CO2_PER_KM_GRAMS;
+        totalTrips++;
+        totalFareCollected += fare;
+        totalCO2SavedGrams += co2SavedGrams;
+    }
+
+    TripLog(const TripLog &amp;t) {
+        logId = t.logId; riderId = t.riderId; cycleId = t.cycleId;
+        distanceKm = t.distanceKm; minutesUsed = t.minutesUsed; peakHour = t.peakHour;
+        fare = t.fare; ecoPointsEarned = t.ecoPointsEarned; co2SavedGrams = t.co2SavedGrams;
+        totalTrips++; totalFareCollected += fare; totalCO2SavedGrams += co2SavedGrams;
+    }
+
+    ~TripLog() { /* trip closed out; cycle already checked back in */ }
+
+    int getLogId() const { return logId; }
+    int getRiderId() const { return riderId; }
+    int getCycleId() const { return cycleId; }
+    float getFare() const { return fare; }
+    int getEcoPoints() const { return ecoPointsEarned; }
+    float getCO2Saved() const { return co2SavedGrams; }
+
+    // Operator overload #3: &#x27;&gt;&#x27; ranks two trips by environmental impact
+    // (CO2 saved) rather than by cost — a comparison a plain rental
+    // system would never need, but this system&#x27;s theme calls for.
+    bool operator&gt;(const TripLog &amp;other) const {
+        return this-&gt;co2SavedGrams &gt; other.co2SavedGrams;
+    }
+
+    friend ostream&amp; operator&lt;&lt;(ostream &amp;out, const TripLog &amp;t) {
+        out &lt;&lt; &quot;Trip#&quot; &lt;&lt; t.logId &lt;&lt; &quot; | Rider &quot; &lt;&lt; t.riderId &lt;&lt; &quot; | Cycle &quot; &lt;&lt; t.cycleId
+            &lt;&lt; &quot; | &quot; &lt;&lt; t.distanceKm &lt;&lt; &quot; km | Rs.&quot; &lt;&lt; fixed &lt;&lt; setprecision(2) &lt;&lt; t.fare
+            &lt;&lt; &quot; | +&quot; &lt;&lt; t.ecoPointsEarned &lt;&lt; &quot; pts | &quot; &lt;&lt; (int)t.co2SavedGrams &lt;&lt; &quot;g CO2 saved&quot;;
+        return out;
+    }
+
+    static int getTotalTrips() { return totalTrips; }
+    static float getTotalFareCollected() { return totalFareCollected; }
+    static float getTotalCO2SavedGrams() { return totalCO2SavedGrams; }
+};
+int TripLog::totalTrips = 0;
+float TripLog::totalFareCollected = 0;
+float TripLog::totalCO2SavedGrams = 0;
+
+// ---------------------------------------------------------
+// Arrays of objects (bounded roster / fleet / trip history)
+// ---------------------------------------------------------
+Rider riders[MAX_RIDERS];
+CampusCycle cycles[MAX_CYCLES];
+TripLog logs[MAX_LOGS];
+int riderCount = 0, cycleCount = 0, logCount = 0;
+
+int findRider(int id) { for (int i = 0; i &lt; riderCount; i++) if (riders[i].getId() == id) return i; return -1; }
+int findCycle(int id)  { for (int i = 0; i &lt; cycleCount; i++) if (cycles[i].getId() == id) return i; return -1; }
+
+// ---------------------------------------------------------
+// MODULE 1 MENU : Rider Management
+// ---------------------------------------------------------
+void registerRider() {
+    if (riderCount &gt;= MAX_RIDERS) { cout &lt;&lt; &quot;Roster full.\n&quot;; return; }
+    int id; char name[40], cat[10];
+    cout &lt;&lt; &quot;Rider ID: &quot;; cin &gt;&gt; id;
+    cout &lt;&lt; &quot;Name: &quot;; cin &gt;&gt; name;
+    cout &lt;&lt; &quot;Category (Student/Staff): &quot;; cin &gt;&gt; cat;
+    riders[riderCount++] = Rider(id, name, cat);
+    cout &lt;&lt; &quot;Rider registered.\n&quot;;
+}
+
+void listRiders() {
+    cout &lt;&lt; &quot;\n-- Riders (Total: &quot; &lt;&lt; Rider::getTotalRiders() &lt;&lt; &quot;) --\n&quot;;
+    cout &lt;&lt; left &lt;&lt; setw(6) &lt;&lt; &quot;ID&quot; &lt;&lt; setw(18) &lt;&lt; &quot;Name&quot; &lt;&lt; setw(9) &lt;&lt; &quot;Type&quot;
+         &lt;&lt; setw(8) &lt;&lt; &quot;Points&quot; &lt;&lt; &quot;Tier&quot; &lt;&lt; endl;
+    for (int i = 0; i &lt; riderCount; i++) riders[i].display();
+}
+
+void riderMenu() {
+    int c;
+    do {
+        cout &lt;&lt; &quot;\n=== MODULE 1: RIDER MANAGEMENT ===\n1. Register Rider\n2. View Riders\n0. Back\nChoice: &quot;;
+        cin &gt;&gt; c;
+        if (c == 1) registerRider(); else if (c == 2) listRiders();
+    } while (c != 0);
+}
+
+// ---------------------------------------------------------
+// MODULE 2 MENU : Cycle Fleet Management
+// ---------------------------------------------------------
+void addCycle() {
+    if (cycleCount &gt;= MAX_CYCLES) { cout &lt;&lt; &quot;Fleet full.\n&quot;; return; }
+    int id; char model[30], dock[30];
+    cout &lt;&lt; &quot;Cycle ID: &quot;; cin &gt;&gt; id;
+    cout &lt;&lt; &quot;Model: &quot;; cin &gt;&gt; model;
+    cout &lt;&lt; &quot;Dock: &quot;; cin &gt;&gt; dock;
+    cycles[cycleCount++] = CampusCycle(id, model, dock);
+    cout &lt;&lt; &quot;Cycle added to fleet.\n&quot;;
+}
+
+void viewFleet() {
+    cout &lt;&lt; &quot;\n-- Fleet (Total: &quot; &lt;&lt; CampusCycle::getTotalCycles()
+         &lt;&lt; &quot; | Needs service: &quot; &lt;&lt; CampusCycle::getRetiredForService() &lt;&lt; &quot;) --\n&quot;;
+    cout &lt;&lt; left &lt;&lt; setw(6) &lt;&lt; &quot;ID&quot; &lt;&lt; setw(14) &lt;&lt; &quot;Model&quot; &lt;&lt; setw(11) &lt;&lt; &quot;Dock&quot;
+         &lt;&lt; setw(6) &lt;&lt; &quot;Trips&quot; &lt;&lt; &quot;Status&quot; &lt;&lt; endl;
+    for (int i = 0; i &lt; cycleCount; i++) cycles[i].display();
+}
+
+void serviceCycle() {
+    int id; cout &lt;&lt; &quot;Cycle ID to service: &quot;; cin &gt;&gt; id;
+    int ci = findCycle(id);
+    if (ci == -1) { cout &lt;&lt; &quot;Not found.\n&quot;; return; }
+    cycles[ci].service();
+    cout &lt;&lt; &quot;Cycle serviced and back in the fleet.\n&quot;;
+}
+
+void cycleMenu() {
+    int c;
+    do {
+        cout &lt;&lt; &quot;\n=== MODULE 2: CYCLE FLEET MANAGEMENT ===\n1. Add Cycle\n2. View Fleet\n3. Service a Cycle\n0. Back\nChoice: &quot;;
+        cin &gt;&gt; c;
+        if (c == 1) addCycle(); else if (c == 2) viewFleet(); else if (c == 3) serviceCycle();
+    } while (c != 0);
+}
+
+// ---------------------------------------------------------
+// MODULE 3 MENU : Trip Management
+// ---------------------------------------------------------
+void logTrip() {
+    if (logCount &gt;= MAX_LOGS) { cout &lt;&lt; &quot;Trip log full.\n&quot;; return; }
+    int rid, cid; float dist, mins; char peakAns;
+    cout &lt;&lt; &quot;Rider ID: &quot;; cin &gt;&gt; rid;
+    cout &lt;&lt; &quot;Cycle ID: &quot;; cin &gt;&gt; cid;
+    int ri = findRider(rid), ci = findCycle(cid);
+    if (ri == -1 || ci == -1) { cout &lt;&lt; &quot;Invalid Rider/Cycle ID.\n&quot;; return; }
+    if (!cycles[ci].isAvailable()) { cout &lt;&lt; &quot;Cycle unavailable (in use or needs service).\n&quot;; return; }
+
+    cycles[ci].checkOut();
+    cout &lt;&lt; &quot;Distance (km), Duration (min): &quot;; cin &gt;&gt; dist &gt;&gt; mins;
+    cout &lt;&lt; &quot;Is this a peak hour trip? (y/n): &quot;; cin &gt;&gt; peakAns;
+    bool peak = (peakAns == &#x27;y&#x27; || peakAns == &#x27;Y&#x27;);
+
+    logs[logCount] = TripLog(logCount + 1, rid, cid, dist, mins, peak, riders[ri].discountForTier());
+    cout &lt;&lt; &quot;Trip logged -&gt; &quot; &lt;&lt; logs[logCount] &lt;&lt; endl;
+
+    riders[ri] += logs[logCount].getEcoPoints();   // operator+= folds points into the rider
+    ++cycles[ci];                                   // operator++ ages the cycle toward service
+    cycles[ci].checkIn(&quot;Nearest Dock&quot;);
+    logCount++;
+}
+
+void listTrips() {
+    cout &lt;&lt; &quot;\n-- Trip Log (Total: &quot; &lt;&lt; TripLog::getTotalTrips() &lt;&lt; &quot;) --\n&quot;;
+    for (int i = 0; i &lt; logCount; i++) cout &lt;&lt; logs[i] &lt;&lt; endl;
+}
+
+void tripMenu() {
+    int c;
+    do {
+        cout &lt;&lt; &quot;\n=== MODULE 3: TRIP MANAGEMENT ===\n1. Log a Trip\n2. View Trip Log\n0. Back\nChoice: &quot;;
+        cin &gt;&gt; c;
+        if (c == 1) logTrip(); else if (c == 2) listTrips();
+    } while (c != 0);
+}
+
+// ---------------------------------------------------------
+// MODULE 4 MENU : Impact Reports &amp; Comparison
+// ---------------------------------------------------------
+void compareTrips() {
+    if (logCount &lt; 2) { cout &lt;&lt; &quot;Need at least 2 trips.\n&quot;; return; }
+    int a, b;
+    cout &lt;&lt; &quot;First trip ID: &quot;; cin &gt;&gt; a;
+    cout &lt;&lt; &quot;Second trip ID: &quot;; cin &gt;&gt; b;
+    if (a &lt; 1 || a &gt; logCount || b &lt; 1 || b &gt; logCount) { cout &lt;&lt; &quot;Invalid ID.\n&quot;; return; }
+    TripLog &amp;t1 = logs[a - 1], &amp;t2 = logs[b - 1];
+    cout &lt;&lt; t1 &lt;&lt; &quot;\n&quot; &lt;&lt; t2 &lt;&lt; &quot;\n&quot;;
+    if (t1 &gt; t2) cout &lt;&lt; &quot;Trip #&quot; &lt;&lt; a &lt;&lt; &quot; was the greener ride.\n&quot;;        // operator&gt;
+    else if (t2 &gt; t1) cout &lt;&lt; &quot;Trip #&quot; &lt;&lt; b &lt;&lt; &quot; was the greener ride.\n&quot;;
+    else cout &lt;&lt; &quot;Both trips saved the same CO2.\n&quot;;
+}
+
+void impactReport() {
+    cout &lt;&lt; &quot;\n=== CAMPUS IMPACT REPORT ===\n&quot;;
+    cout &lt;&lt; &quot;Total Riders           : &quot; &lt;&lt; Rider::getTotalRiders() &lt;&lt; endl;
+    cout &lt;&lt; &quot;Total Cycles in Fleet  : &quot; &lt;&lt; CampusCycle::getTotalCycles()
+         &lt;&lt; &quot; (needing service: &quot; &lt;&lt; CampusCycle::getRetiredForService() &lt;&lt; &quot;)\n&quot;;
+    cout &lt;&lt; &quot;Total Trips Logged     : &quot; &lt;&lt; TripLog::getTotalTrips() &lt;&lt; endl;
+    cout &lt;&lt; &quot;Total Fare Collected   : Rs.&quot; &lt;&lt; fixed &lt;&lt; setprecision(2)
+         &lt;&lt; TripLog::getTotalFareCollected() &lt;&lt; endl;
+    cout &lt;&lt; &quot;Total CO2 Avoided      : &quot; &lt;&lt; fixed &lt;&lt; setprecision(0)
+         &lt;&lt; TripLog::getTotalCO2SavedGrams() / 1000.0f &lt;&lt; &quot; kg&quot; &lt;&lt; endl;
+
+    int available = 0;
+    for (int i = 0; i &lt; cycleCount; i++) if (cycles[i].isAvailable()) available++;
+    cout &lt;&lt; &quot;Cycles Currently Free  : &quot; &lt;&lt; available &lt;&lt; &quot; / &quot; &lt;&lt; cycleCount &lt;&lt; endl;
+}
+
+void reportMenu() {
+    int c;
+    do {
+        cout &lt;&lt; &quot;\n=== MODULE 4: IMPACT REPORTS &amp; COMPARISON ===\n1. Compare Two Trips (greener ride)\n2. Campus Impact Report\n0. Back\nChoice: &quot;;
+        cin &gt;&gt; c;
+        if (c == 1) compareTrips(); else if (c == 2) impactReport();
+    } while (c != 0);
+}
+
+// ---------------------------------------------------------
+// MAIN MENU
+// ---------------------------------------------------------
+int main() {
+    int choice;
+    cout &lt;&lt; &quot;=====================================================\n&quot;;
+    cout &lt;&lt; &quot; SMART CAMPUS BIKE SHARING MANAGEMENT SYSTEM\n&quot;;
+    cout &lt;&lt; &quot;=====================================================\n&quot;;
+    do {
+        cout &lt;&lt; &quot;\nMAIN MENU\n1. Rider Management\n2. Cycle Fleet Management\n&quot;
+             &lt;&lt; &quot;3. Trip Management\n4. Impact Reports &amp; Comparison\n0. Exit\nChoice: &quot;;
+        cin &gt;&gt; choice;
+        switch (choice) {
+            case 1: riderMenu(); break;
+            case 2: cycleMenu(); break;
+            case 3: tripMenu(); break;
+            case 4: reportMenu(); break;
+            case 0: cout &lt;&lt; &quot;Exiting. All objects will be destroyed.\n&quot;; break;
+            default: cout &lt;&lt; &quot;Invalid choice.\n&quot;;
+        }
+    } while (choice != 0);
+    return 0;
+}
+</pre>
+
+</body>
+</html>
